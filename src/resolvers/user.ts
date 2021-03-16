@@ -1,11 +1,23 @@
-import { User, UserModel, UserSchema } from "../types/User";
+import { User, UserModel } from "../types/User";
 import { Arg, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
 import argon2 from 'argon2';
+import { validateEmail } from "../utils/validators";
 
 @InputType() // Input types are used for arguments
-class UsernameAndPasswordInput {
+class registerInput {
   @Field()
-  username: string;
+  firstName: string;
+  @Field()
+  lastName: string;
+  @Field()
+  email: string;
+  @Field()
+  password: string;
+};
+@InputType() // Input types are used for arguments
+class loginInput {
+  @Field()
+  email: string;
   @Field()
   password: string;
 };
@@ -29,21 +41,24 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+
+   /* ********** 
+      REGISTER 
+    *********** */
+
   @Mutation(() => UserResponse)
   async register (
-    @Arg('options') options: UsernameAndPasswordInput,
+    @Arg('options') options: registerInput,
   ): Promise<UserResponse> {
-    const { username, password } = options
-    
-    if(username.length <= 2){
+    const { firstName, lastName, email, password } = options;
+    if(!validateEmail(email)){
       return {
         errors: [{
-          field: 'username',
-          message: 'Username must be more than 2 characters'
+          field: "email",
+          message: "Please enter a valid email"
         }]
       }
-    };
-    
+    }
     if(password.length < 8){
       return {
         errors: [{
@@ -54,27 +69,61 @@ export class UserResolver {
     };
 
     const hashedPassword = await argon2.hash(password); // hashes password for db storage
-
     const user = new UserModel ({
-      username,
+      firstName,
+      lastName,
+      email,
       password: hashedPassword
     });
+
     try {
       await user.save();
     } catch (error) {
-      console.log(error)
       if(error.code === 11000){
+        // Duplicate email error
         return {
           errors: [{
-            message: 'Username is already taken',
-            field: 'username'
+            field: 'email',
+            message: 'Email already has an account, please login',
           }]
         }
       }
     }
 
-    return {
-      user
-    }
-  }
+    return { user }
+  };
+
+     /* ********** 
+      LOGIN
+    *********** */
+
+  @Mutation(() => UserResponse)
+  async login (
+    @Arg('options') options: loginInput,
+  ): Promise<UserResponse> {
+    const { email, password } = options;
+    const user = await UserModel.findOne({email: email});
+    if(!user){
+      return {
+        errors: [{
+          message: "Email invalid, please register to create an account.",
+          field: "email"
+        }]
+      }
+    };
+    const isValid = await argon2.verify(user.password, password);
+
+     if(!isValid){
+       return {
+         errors: [{
+           message: "Incorrect password",
+           field: "password"
+         }]
+       }
+     };
+     
+     return { user }
+  };
+
+
 }

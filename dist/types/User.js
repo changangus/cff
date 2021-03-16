@@ -20,22 +20,26 @@ __decorate([
 ], User.prototype, "_id", void 0);
 __decorate([
     type_graphql_1.Field(() => String, { nullable: true }),
-    typegoose_1.prop({ required: true, unique: true }),
+    typegoose_1.prop({ required: true }),
     __metadata("design:type", String)
-], User.prototype, "username", void 0);
+], User.prototype, "firstName", void 0);
+__decorate([
+    type_graphql_1.Field(() => String, { nullable: true }),
+    typegoose_1.prop({ required: true }),
+    __metadata("design:type", String)
+], User.prototype, "lastName", void 0);
 __decorate([
     type_graphql_1.Field({ nullable: true }),
     typegoose_1.prop({ required: true }),
     __metadata("design:type", String)
-], User.prototype, "password", void 0);
-__decorate([
-    type_graphql_1.Field({ nullable: true }),
-    typegoose_1.prop(),
-    __metadata("design:type", String)
 ], User.prototype, "email", void 0);
+__decorate([
+    typegoose_1.prop({ required: true }),
+    __metadata("design:type", String)
+], User.prototype, "password", void 0);
 User = __decorate([
     type_graphql_1.ObjectType(),
-    typegoose_1.index({ username: 1 }, { unique: true })
+    typegoose_1.index({ email: 1 }, { unique: true })
 ], User);
 exports.User = User;
 ;

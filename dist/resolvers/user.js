@@ -28,19 +28,42 @@ exports.UserResolver = void 0;
 const User_1 = require("../types/User");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
-let UsernameAndPasswordInput = class UsernameAndPasswordInput {
+const validators_1 = require("../utils/validators");
+let registerInput = class registerInput {
 };
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], UsernameAndPasswordInput.prototype, "username", void 0);
+], registerInput.prototype, "firstName", void 0);
 __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
-], UsernameAndPasswordInput.prototype, "password", void 0);
-UsernameAndPasswordInput = __decorate([
+], registerInput.prototype, "lastName", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], registerInput.prototype, "email", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], registerInput.prototype, "password", void 0);
+registerInput = __decorate([
     type_graphql_1.InputType()
-], UsernameAndPasswordInput);
+], registerInput);
+;
+let loginInput = class loginInput {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], loginInput.prototype, "email", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], loginInput.prototype, "password", void 0);
+loginInput = __decorate([
+    type_graphql_1.InputType()
+], loginInput);
 ;
 let FieldError = class FieldError {
 };
@@ -73,16 +96,15 @@ UserResponse = __decorate([
 let UserResolver = class UserResolver {
     register(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { username, password } = options;
-            if (username.length <= 2) {
+            const { firstName, lastName, email, password } = options;
+            if (!validators_1.validateEmail(email)) {
                 return {
                     errors: [{
-                            field: 'username',
-                            message: 'Username must be more than 2 characters'
+                            field: "email",
+                            message: "Please enter a valid email"
                         }]
                 };
             }
-            ;
             if (password.length < 8) {
                 return {
                     errors: [{
@@ -94,36 +116,70 @@ let UserResolver = class UserResolver {
             ;
             const hashedPassword = yield argon2_1.default.hash(password);
             const user = new User_1.UserModel({
-                username,
+                firstName,
+                lastName,
+                email,
                 password: hashedPassword
             });
             try {
                 yield user.save();
             }
             catch (error) {
-                console.log(error);
                 if (error.code === 11000) {
                     return {
                         errors: [{
-                                message: 'Username is already taken',
-                                field: 'username'
+                                field: 'email',
+                                message: 'Email already has an account, please login',
                             }]
                     };
                 }
             }
-            return {
-                user
-            };
+            return { user };
         });
     }
+    ;
+    login(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { email, password } = options;
+            const user = yield User_1.UserModel.findOne({ email: email });
+            if (!user) {
+                return {
+                    errors: [{
+                            message: "Email invalid, please register to create an account.",
+                            field: "email"
+                        }]
+                };
+            }
+            ;
+            const isValid = yield argon2_1.default.verify(user.password, password);
+            if (!isValid) {
+                return {
+                    errors: [{
+                            message: "Incorrect password",
+                            field: "password"
+                        }]
+                };
+            }
+            ;
+            return { user };
+        });
+    }
+    ;
 };
 __decorate([
     type_graphql_1.Mutation(() => UserResponse),
     __param(0, type_graphql_1.Arg('options')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UsernameAndPasswordInput]),
+    __metadata("design:paramtypes", [registerInput]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
+__decorate([
+    type_graphql_1.Mutation(() => UserResponse),
+    __param(0, type_graphql_1.Arg('options')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [loginInput]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "login", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);
