@@ -1,9 +1,11 @@
-import { User, UserModel } from "../types/User";
-import { Arg, Field, InputType, Mutation, ObjectType, Resolver } from "type-graphql";
+import { User, UserModel } from "../models/User";
+import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import argon2 from 'argon2';
 import { validateEmail } from "../utils/validators";
+import { MyContext } from "../types";
 
-@InputType() // Input types are used for arguments
+// (Input types are used for arguments) 
+@InputType() // type for register input
 class registerInput {
   @Field()
   firstName: string;
@@ -14,7 +16,7 @@ class registerInput {
   @Field()
   password: string;
 };
-@InputType() // Input types are used for arguments
+@InputType() // type for login input 
 class loginInput {
   @Field()
   email: string;
@@ -22,7 +24,7 @@ class loginInput {
   password: string;
 };
 
-@ObjectType()
+@ObjectType() // type for error resonse
 class FieldError {
   @Field()
   field: string;
@@ -32,26 +34,44 @@ class FieldError {
 
 @ObjectType() // Object types you can return from your mutations
 class UserResponse {
-  @Field(() => [FieldError], {nullable: true})
+  @Field(() => [FieldError], { nullable: true })
   errors?: FieldError[];
 
-  @Field(() => User, {nullable: true})
+  @Field(() => User, { nullable: true })
   user?: User;
 };
 
 @Resolver()
 export class UserResolver {
+  /* ********** 
+     ME 
+   *********** */
 
-   /* ********** 
-      REGISTER 
-    *********** */
+  @Query(() => User, { nullable: true })
+  async me(
+    @Ctx() { req }: MyContext,
+  ) {
+
+    if (!req.session.userId) { // check session 
+      return null
+    };
+
+    const user = await UserModel.findOne({ _id: req.session.userId });
+
+    return user;
+  };
+
+  /* ********** 
+     REGISTER 
+   *********** */
 
   @Mutation(() => UserResponse)
-  async register (
+  async register(
     @Arg('options') options: registerInput,
+    @Ctx() { req }: MyContext,
   ): Promise<UserResponse> {
     const { firstName, lastName, email, password } = options;
-    if(!validateEmail(email)){
+    if (!validateEmail(email)) {
       return {
         errors: [{
           field: "email",
@@ -59,7 +79,7 @@ export class UserResolver {
         }]
       }
     }
-    if(password.length < 8){
+    if (password.length < 8) {
       return {
         errors: [{
           field: 'password',
@@ -69,7 +89,7 @@ export class UserResolver {
     };
 
     const hashedPassword = await argon2.hash(password); // hashes password for db storage
-    const user = new UserModel ({
+    const user = new UserModel({
       firstName,
       lastName,
       email,
@@ -79,8 +99,7 @@ export class UserResolver {
     try {
       await user.save();
     } catch (error) {
-      if(error.code === 11000){
-        // Duplicate email error
+      if (error.code === 11000) {  // Duplicate email error
         return {
           errors: [{
             field: 'email',
@@ -89,21 +108,29 @@ export class UserResolver {
         }
       }
     }
+    
+    /* 
+      store user id session
+      this will set a cookie on the user
+      and keep them logged in
+    */
+    req.session.userId = user._id;
 
     return { user }
   };
 
-     /* ********** 
-      LOGIN
-    *********** */
+  /* ********** 
+   LOGIN
+ *********** */
 
   @Mutation(() => UserResponse)
-  async login (
+  async login(
     @Arg('options') options: loginInput,
+    @Ctx() { req }: MyContext,
   ): Promise<UserResponse> {
     const { email, password } = options;
-    const user = await UserModel.findOne({email: email});
-    if(!user){
+    const user = await UserModel.findOne({ email: email });
+    if (!user) {
       return {
         errors: [{
           message: "Email invalid, please register to create an account.",
@@ -113,17 +140,19 @@ export class UserResolver {
     };
     const isValid = await argon2.verify(user.password, password);
 
-     if(!isValid){
-       return {
-         errors: [{
-           message: "Incorrect password",
-           field: "password"
-         }]
-       }
-     };
-     
-     return { user }
-  };
+    if (!isValid) {
+      return {
+        errors: [{
+          message: "Incorrect password",
+          field: "password"
+        }]
+      }
+    };
 
+    // storing the user id in our session for later access
+    req.session.userId = user._id;
+
+    return { user }
+  };
 
 }

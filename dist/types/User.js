@@ -19,12 +19,12 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "_id", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field({ nullable: true }),
     typegoose_1.prop({ required: true }),
     __metadata("design:type", String)
 ], User.prototype, "firstName", void 0);
 __decorate([
-    type_graphql_1.Field(() => String, { nullable: true }),
+    type_graphql_1.Field({ nullable: true }),
     typegoose_1.prop({ required: true }),
     __metadata("design:type", String)
 ], User.prototype, "lastName", void 0);

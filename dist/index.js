@@ -20,6 +20,11 @@ const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
 const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
+const redis_1 = __importDefault(require("redis"));
+const express_session_1 = __importDefault(require("express-session"));
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const constants_1 = require("./constants");
+const cors_1 = __importDefault(require("cors"));
 const app = express_1.default();
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -39,11 +44,34 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    const RedisStore = connect_redis_1.default(express_session_1.default);
+    const redisClient = redis_1.default.createClient();
+    app.use(cors_1.default({
+        origin: 'http://localhost:3000',
+        credentials: true,
+    }));
+    app.use(express_session_1.default({
+        name: 'qid',
+        store: new RedisStore({
+            client: redisClient,
+            disableTouch: true,
+        }),
+        cookie: {
+            maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: constants_1.__prod__,
+        },
+        secret: 'QDwfet234Foi764hGt9iklR45EDfv',
+        resave: false,
+        saveUninitialized: false,
+    }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
             resolvers: [hello_1.HelloResolver, user_1.UserResolver],
             validate: false,
-        })
+        }),
+        context: ({ req, res }) => ({ req, res })
     });
     apolloServer.applyMiddleware({ app, cors: false });
     const PORT = 4000;

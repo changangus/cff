@@ -25,7 +25,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolver = void 0;
-const User_1 = require("../types/User");
+const User_1 = require("../models/User");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const validators_1 = require("../utils/validators");
@@ -94,7 +94,18 @@ UserResponse = __decorate([
 ], UserResponse);
 ;
 let UserResolver = class UserResolver {
-    register(options) {
+    me({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return null;
+            }
+            ;
+            const user = yield User_1.UserModel.findOne({ _id: req.session.userId });
+            return user;
+        });
+    }
+    ;
+    register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { firstName, lastName, email, password } = options;
             if (!validators_1.validateEmail(email)) {
@@ -134,11 +145,12 @@ let UserResolver = class UserResolver {
                     };
                 }
             }
+            req.session.userId = user._id;
             return { user };
         });
     }
     ;
-    login(options) {
+    login(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = options;
             const user = yield User_1.UserModel.findOne({ email: email });
@@ -161,23 +173,33 @@ let UserResolver = class UserResolver {
                 };
             }
             ;
+            req.session.userId = user._id;
             return { user };
         });
     }
     ;
 };
 __decorate([
+    type_graphql_1.Query(() => User_1.User, { nullable: true }),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "me", null);
+__decorate([
     type_graphql_1.Mutation(() => UserResponse),
     __param(0, type_graphql_1.Arg('options')),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [registerInput]),
+    __metadata("design:paramtypes", [registerInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
 __decorate([
     type_graphql_1.Mutation(() => UserResponse),
     __param(0, type_graphql_1.Arg('options')),
+    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [loginInput]),
+    __metadata("design:paramtypes", [loginInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
 UserResolver = __decorate([
