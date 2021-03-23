@@ -71,6 +71,22 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
   ): Promise<UserResponse> {
     const { firstName, lastName, email, password } = options;
+    if (firstName.length < 1) {
+      return {
+        errors: [{
+          field: "firstName",
+          message: "First name is required"
+        }]
+      }
+    };
+    if (lastName.length < 1) {
+      return {
+        errors: [{
+          field: "lastName",
+          message: "Last Name is required"
+        }]
+      }
+    }; 
     if (!validateEmail(email)) {
       return {
         errors: [{
@@ -78,7 +94,7 @@ export class UserResolver {
           message: "Please enter a valid email"
         }]
       }
-    }
+    };
     if (password.length < 8) {
       return {
         errors: [{
@@ -98,6 +114,7 @@ export class UserResolver {
 
     try {
       await user.save();
+      console.log("saving");
     } catch (error) {
       if (error.code === 11000) {  // Duplicate email error
         return {
@@ -107,7 +124,7 @@ export class UserResolver {
           }]
         }
       }
-    }
+    };
     
     /* 
       store user id session

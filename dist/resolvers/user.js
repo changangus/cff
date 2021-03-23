@@ -108,6 +108,24 @@ let UserResolver = class UserResolver {
     register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { firstName, lastName, email, password } = options;
+            if (firstName.length < 1) {
+                return {
+                    errors: [{
+                            field: "firstName",
+                            message: "First name is required"
+                        }]
+                };
+            }
+            ;
+            if (lastName.length < 1) {
+                return {
+                    errors: [{
+                            field: "lastName",
+                            message: "Last Name is required"
+                        }]
+                };
+            }
+            ;
             if (!validators_1.validateEmail(email)) {
                 return {
                     errors: [{
@@ -116,6 +134,7 @@ let UserResolver = class UserResolver {
                         }]
                 };
             }
+            ;
             if (password.length < 8) {
                 return {
                     errors: [{
@@ -134,6 +153,7 @@ let UserResolver = class UserResolver {
             });
             try {
                 yield user.save();
+                console.log("saving");
             }
             catch (error) {
                 if (error.code === 11000) {
@@ -145,6 +165,7 @@ let UserResolver = class UserResolver {
                     };
                 }
             }
+            ;
             req.session.userId = user._id;
             return { user };
         });
