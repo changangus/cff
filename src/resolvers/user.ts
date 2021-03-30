@@ -1,4 +1,4 @@
-import { User, UserModel } from "../models/User";
+import { User, Users } from "../models/User";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import argon2 from 'argon2';
 import { validateEmail, validateRegister } from "../utils/validators";
@@ -24,7 +24,7 @@ export class UserResolver {
       return null
     };
 
-    const user = await UserModel.findOne({ _id: req.session.userId });
+    const user = await Users.findOne({ _id: req.session.userId });
 
     return user;
   };
@@ -46,7 +46,7 @@ export class UserResolver {
     };
     
     const hashedPassword = await argon2.hash(password); // hashes password for db storage
-    const user = new UserModel({
+    const user = new Users({
       firstName,
       lastName,
       email,
@@ -87,7 +87,7 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
   ): Promise<UserResponse> {
     const { email, password } = options;
-    const user = await UserModel.findOne({ email: email });
+    const user = await Users.findOne({ email: email });
     if (!user) {
       return {
         errors: [{
@@ -139,7 +139,7 @@ export class UserResolver {
     @Arg('email') email: string,
     @Ctx() { redis } : MyContext
   ) {
-    const user = await UserModel.findOne({email});
+    const user = await Users.findOne({email});
     if(!user) {
       return true
     }
@@ -174,10 +174,11 @@ export class UserResolver {
       }
     }
     const key = FORGET_PASSWORD_PREFIX + token;
-    const userIdString = await redis.get(key);
+    const userId = await redis.get(key);
     
 
-    if(!userIdString) {
+    if(!userId) {
+      console.log('here')
       return {
         errors: [{
           field: 'token',
@@ -185,10 +186,9 @@ export class UserResolver {
         }]
       }
     };
-
-    const userId = parseInt(userIdString);
-    const user = await UserModel.findOne({_id: userId });
-
+    
+    const user = await Users.findOne({_id: userId });
+    
     if(!user) {
       return {
         errors: [{
@@ -198,12 +198,13 @@ export class UserResolver {
       }
     };
 
-    await UserModel.findByIdAndUpdate({_id: userId}, {
+    await Users.findByIdAndUpdate({_id: userId}, {
       password: await argon2.hash(newPassword)
     });
 
-    req.session.userId = userId
-
+    req.session.userId = userId;
+    redis.del(key);
+    
     return {
       user
     }

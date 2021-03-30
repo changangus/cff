@@ -17,6 +17,7 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 function sendEmail(to, html) {
     return __awaiter(this, void 0, void 0, function* () {
         let transporter = nodemailer_1.default.createTransport({
+            name: 'CFF',
             host: "smtp.ethereal.email",
             port: 587,
             secure: false,
@@ -26,7 +27,7 @@ function sendEmail(to, html) {
             },
         });
         let info = yield transporter.sendMail({
-            from: '"CFF" <communityfridgefinder@noreply.com>',
+            from: '"CFF" <cff@noreply.cff>',
             to,
             subject: "CFF: Forgot Password",
             html

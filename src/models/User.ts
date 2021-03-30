@@ -5,7 +5,7 @@ import { prop, getModelForClass, index, buildSchema } from "@typegoose/typegoose
 @index({email: 1}, {unique: true}) // Mongo uses indexes to keep track of unique props
 export class User {
   @Field(() => ID, {nullable: true})
-  _id: number
+  _id: string
 
   @Field({nullable: true}) 
   @prop({required: true})
@@ -24,5 +24,5 @@ export class User {
   password: string;
 };
 
-export const UserModel = getModelForClass(User);
+export const Users = getModelForClass(User);
 export const UserSchema = buildSchema(User);

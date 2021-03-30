@@ -42,7 +42,7 @@ let UserResolver = class UserResolver {
                 return null;
             }
             ;
-            const user = yield User_1.UserModel.findOne({ _id: req.session.userId });
+            const user = yield User_1.Users.findOne({ _id: req.session.userId });
             return user;
         });
     }
@@ -56,7 +56,7 @@ let UserResolver = class UserResolver {
             }
             ;
             const hashedPassword = yield argon2_1.default.hash(password);
-            const user = new User_1.UserModel({
+            const user = new User_1.Users({
                 firstName,
                 lastName,
                 email,
@@ -85,7 +85,7 @@ let UserResolver = class UserResolver {
     login(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = options;
-            const user = yield User_1.UserModel.findOne({ email: email });
+            const user = yield User_1.Users.findOne({ email: email });
             if (!user) {
                 return {
                     errors: [{
@@ -128,7 +128,7 @@ let UserResolver = class UserResolver {
     ;
     forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.UserModel.findOne({ email });
+            const user = yield User_1.Users.findOne({ email });
             if (!user) {
                 return true;
             }
@@ -152,8 +152,9 @@ let UserResolver = class UserResolver {
                 };
             }
             const key = constants_1.FORGET_PASSWORD_PREFIX + token;
-            const userIdString = yield redis.get(key);
-            if (!userIdString) {
+            const userId = yield redis.get(key);
+            if (!userId) {
+                console.log('here');
                 return {
                     errors: [{
                             field: 'token',
@@ -162,8 +163,7 @@ let UserResolver = class UserResolver {
                 };
             }
             ;
-            const userId = parseInt(userIdString);
-            const user = yield User_1.UserModel.findOne({ _id: userId });
+            const user = yield User_1.Users.findOne({ _id: userId });
             if (!user) {
                 return {
                     errors: [{
@@ -173,10 +173,11 @@ let UserResolver = class UserResolver {
                 };
             }
             ;
-            yield User_1.UserModel.findByIdAndUpdate({ _id: userId }, {
+            yield User_1.Users.findByIdAndUpdate({ _id: userId }, {
                 password: yield argon2_1.default.hash(newPassword)
             });
             req.session.userId = userId;
+            redis.del(key);
             return {
                 user
             };

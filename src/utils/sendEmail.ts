@@ -4,6 +4,7 @@ import nodemailer from "nodemailer";
 export async function sendEmail(to: string, html: string) {
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
+    name: 'CFF',
     host: "smtp.ethereal.email",
     port: 587,
     secure: false, // true for 465, false for other ports
@@ -15,7 +16,7 @@ export async function sendEmail(to: string, html: string) {
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
-    from: '"CFF" <communityfridgefinder@noreply.com>', // sender address
+    from: '"CFF" <cff@noreply.cff>', // sender address
     to, // list of receivers
     subject: "CFF: Forgot Password", // Subject line
     html // html body

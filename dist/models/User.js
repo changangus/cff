@@ -9,14 +9,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserSchema = exports.UserModel = exports.User = void 0;
+exports.UserSchema = exports.Users = exports.User = void 0;
 const type_graphql_1 = require("type-graphql");
 const typegoose_1 = require("@typegoose/typegoose");
 let User = class User {
 };
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.ID, { nullable: true }),
-    __metadata("design:type", Number)
+    __metadata("design:type", String)
 ], User.prototype, "_id", void 0);
 __decorate([
     type_graphql_1.Field({ nullable: true }),
@@ -43,6 +43,6 @@ User = __decorate([
 ], User);
 exports.User = User;
 ;
-exports.UserModel = typegoose_1.getModelForClass(User);
+exports.Users = typegoose_1.getModelForClass(User);
 exports.UserSchema = typegoose_1.buildSchema(User);
 //# sourceMappingURL=User.js.map
