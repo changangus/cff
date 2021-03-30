@@ -1,46 +1,14 @@
 import { User, UserModel } from "../models/User";
-import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import argon2 from 'argon2';
-import { validateEmail } from "../utils/validators";
+import { validateEmail, validateRegister } from "../utils/validators";
 import { MyContext } from "../types";
-
-// (Input types are used for arguments) 
-@InputType() // type for register input
-class registerInput {
-  @Field()
-  firstName: string;
-  @Field()
-  lastName: string;
-  @Field()
-  email: string;
-  @Field()
-  password: string;
-};
-@InputType() // type for login input 
-class loginInput {
-  @Field()
-  email: string;
-  @Field()
-  password: string;
-};
-
-@ObjectType() // type for error resonse
-class FieldError {
-  @Field()
-  field: string;
-  @Field()
-  message: string;
-};
-
-@ObjectType() // Object types you can return from your mutations
-class UserResponse {
-  @Field(() => [FieldError], { nullable: true })
-  errors?: FieldError[];
-
-  @Field(() => User, { nullable: true })
-  user?: User;
-};
-
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
+import { sendEmail } from '../utils/sendEmail';
+import { v4 } from 'uuid';
+import { registerInput } from './types/registerInput';
+import { loginInput } from './types/loginInput';
+import { UserResponse } from './types/UserResponse';
 @Resolver()
 export class UserResolver {
   /* ********** 
@@ -71,39 +39,12 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
   ): Promise<UserResponse> {
     const { firstName, lastName, email, password } = options;
-    if (firstName.length < 1) {
-      return {
-        errors: [{
-          field: "firstName",
-          message: "First name is required"
-        }]
-      }
+    
+    const errors = validateRegister(options);
+    if(errors) {
+      return { errors }
     };
-    if (lastName.length < 1) {
-      return {
-        errors: [{
-          field: "lastName",
-          message: "Last Name is required"
-        }]
-      }
-    }; 
-    if (!validateEmail(email)) {
-      return {
-        errors: [{
-          field: "email",
-          message: "Please enter a valid email"
-        }]
-      }
-    };
-    if (password.length < 8) {
-      return {
-        errors: [{
-          field: 'password',
-          message: 'Password must be more than 8 characters'
-        }]
-      }
-    };
-
+    
     const hashedPassword = await argon2.hash(password); // hashes password for db storage
     const user = new UserModel({
       firstName,
@@ -172,4 +113,99 @@ export class UserResolver {
     return { user }
   };
 
+  @Mutation(() => Boolean)
+  async logout (
+    @Ctx() {req, res} : MyContext
+  ) {
+    return new Promise((resolve) => {
+      req.session.destroy((err) => {
+        res.clearCookie(COOKIE_NAME);
+        if(err) {
+          console.log(err);
+          resolve(false);
+          return;
+        } 
+        resolve(true)
+      })
+    });
+  };
+
+  /* ************* 
+    FORGOT_PASSWORD
+    ************** */ 
+  
+  @Mutation(()=> Boolean)
+  async forgotPassword(
+    @Arg('email') email: string,
+    @Ctx() { redis } : MyContext
+  ) {
+    const user = await UserModel.findOne({email});
+    if(!user) {
+      return true
+    }
+
+
+    const token = v4();
+    const key = FORGET_PASSWORD_PREFIX + token;
+    redis.set(key, user._id, 'ex', 1000 * 60 * 60 * 2) // 2 hours of validity
+
+    const html = `<a href='http://localhost:3000/change-password/${token}'>Link to reset password</a>`
+    sendEmail(user.email, html);
+
+    return true;
+  };
+
+    /* ************* 
+    CHANGE_PASSWORD
+    ************** */ 
+
+  @Mutation(() => UserResponse)
+  async changePassword ( 
+    @Arg('token') token: string,
+    @Arg('newPassword') newPassword: string,
+    @Ctx() { redis, req }: MyContext
+  ): Promise<UserResponse> {
+    if(newPassword.length < 8){
+      return {
+        errors: [{
+          field: 'newPassword',
+          message: 'password must be at least 8 characters long'
+        }]
+      }
+    }
+    const key = FORGET_PASSWORD_PREFIX + token;
+    const userIdString = await redis.get(key);
+    
+
+    if(!userIdString) {
+      return {
+        errors: [{
+          field: 'token',
+          message: 'Token Expired'
+        }]
+      }
+    };
+
+    const userId = parseInt(userIdString);
+    const user = await UserModel.findOne({_id: userId });
+
+    if(!user) {
+      return {
+        errors: [{
+          field: 'token',
+          message: 'This user does not exist'
+        }]
+      }
+    };
+
+    await UserModel.findByIdAndUpdate({_id: userId}, {
+      password: await argon2.hash(newPassword)
+    });
+
+    req.session.userId = userId
+
+    return {
+      user
+    }
+  } 
 }

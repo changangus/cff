@@ -6,10 +6,10 @@ import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { UserResolver } from "./resolvers/user";
-import redis from "redis";
+import Redis from "ioredis";
 import session from "express-session";
 import connectRedis from "connect-redis";
-import { __prod__ } from "./constants";
+import { COOKIE_NAME, __prod__ } from "./constants";
 import cors from 'cors';
 
 // create express instance:
@@ -32,11 +32,10 @@ const connectDB = async() => {
 };
 
 connectDB();
-
 const main = async () => {
   // Redis 
   const RedisStore = connectRedis(session);
-  const redisClient = redis.createClient();
+  const redis = new Redis();
   // cors 
   app.use(cors({
     origin: 'http://localhost:3000',
@@ -45,9 +44,9 @@ const main = async () => {
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
-      name: 'qid',
+      name: COOKIE_NAME,
       store: new RedisStore({
-        client: redisClient, 
+        client: redis, 
         disableTouch: true,
       }),
       cookie: {
@@ -68,7 +67,7 @@ const main = async () => {
       resolvers: [HelloResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res})
+    context: ({ req, res }) => ({ req, res, redis })
   })
   apolloServer.applyMiddleware({ app, cors: false });
   const PORT = 4000;

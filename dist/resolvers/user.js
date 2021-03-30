@@ -29,70 +29,12 @@ const User_1 = require("../models/User");
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
 const validators_1 = require("../utils/validators");
-let registerInput = class registerInput {
-};
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], registerInput.prototype, "firstName", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], registerInput.prototype, "lastName", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], registerInput.prototype, "email", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], registerInput.prototype, "password", void 0);
-registerInput = __decorate([
-    type_graphql_1.InputType()
-], registerInput);
-;
-let loginInput = class loginInput {
-};
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], loginInput.prototype, "email", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], loginInput.prototype, "password", void 0);
-loginInput = __decorate([
-    type_graphql_1.InputType()
-], loginInput);
-;
-let FieldError = class FieldError {
-};
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], FieldError.prototype, "field", void 0);
-__decorate([
-    type_graphql_1.Field(),
-    __metadata("design:type", String)
-], FieldError.prototype, "message", void 0);
-FieldError = __decorate([
-    type_graphql_1.ObjectType()
-], FieldError);
-;
-let UserResponse = class UserResponse {
-};
-__decorate([
-    type_graphql_1.Field(() => [FieldError], { nullable: true }),
-    __metadata("design:type", Array)
-], UserResponse.prototype, "errors", void 0);
-__decorate([
-    type_graphql_1.Field(() => User_1.User, { nullable: true }),
-    __metadata("design:type", User_1.User)
-], UserResponse.prototype, "user", void 0);
-UserResponse = __decorate([
-    type_graphql_1.ObjectType()
-], UserResponse);
-;
+const constants_1 = require("../constants");
+const sendEmail_1 = require("../utils/sendEmail");
+const uuid_1 = require("uuid");
+const registerInput_1 = require("./types/registerInput");
+const loginInput_1 = require("./types/loginInput");
+const UserResponse_1 = require("./types/UserResponse");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -108,40 +50,9 @@ let UserResolver = class UserResolver {
     register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { firstName, lastName, email, password } = options;
-            if (firstName.length < 1) {
-                return {
-                    errors: [{
-                            field: "firstName",
-                            message: "First name is required"
-                        }]
-                };
-            }
-            ;
-            if (lastName.length < 1) {
-                return {
-                    errors: [{
-                            field: "lastName",
-                            message: "Last Name is required"
-                        }]
-                };
-            }
-            ;
-            if (!validators_1.validateEmail(email)) {
-                return {
-                    errors: [{
-                            field: "email",
-                            message: "Please enter a valid email"
-                        }]
-                };
-            }
-            ;
-            if (password.length < 8) {
-                return {
-                    errors: [{
-                            field: 'password',
-                            message: 'Password must be more than 8 characters'
-                        }]
-                };
+            const errors = validators_1.validateRegister(options);
+            if (errors) {
+                return { errors };
             }
             ;
             const hashedPassword = yield argon2_1.default.hash(password);
@@ -199,6 +110,78 @@ let UserResolver = class UserResolver {
         });
     }
     ;
+    logout({ req, res }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => {
+                req.session.destroy((err) => {
+                    res.clearCookie(constants_1.COOKIE_NAME);
+                    if (err) {
+                        console.log(err);
+                        resolve(false);
+                        return;
+                    }
+                    resolve(true);
+                });
+            });
+        });
+    }
+    ;
+    forgotPassword(email, { redis }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield User_1.UserModel.findOne({ email });
+            if (!user) {
+                return true;
+            }
+            const token = uuid_1.v4();
+            const key = constants_1.FORGET_PASSWORD_PREFIX + token;
+            redis.set(key, user._id, 'ex', 1000 * 60 * 60 * 2);
+            const html = `<a href='http://localhost:3000/change-password/${token}'>Link to reset password</a>`;
+            sendEmail_1.sendEmail(user.email, html);
+            return true;
+        });
+    }
+    ;
+    changePassword(token, newPassword, { redis, req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (newPassword.length < 8) {
+                return {
+                    errors: [{
+                            field: 'newPassword',
+                            message: 'password must be at least 8 characters long'
+                        }]
+                };
+            }
+            const key = constants_1.FORGET_PASSWORD_PREFIX + token;
+            const userIdString = yield redis.get(key);
+            if (!userIdString) {
+                return {
+                    errors: [{
+                            field: 'token',
+                            message: 'Token Expired'
+                        }]
+                };
+            }
+            ;
+            const userId = parseInt(userIdString);
+            const user = yield User_1.UserModel.findOne({ _id: userId });
+            if (!user) {
+                return {
+                    errors: [{
+                            field: 'token',
+                            message: 'This user does not exist'
+                        }]
+                };
+            }
+            ;
+            yield User_1.UserModel.findByIdAndUpdate({ _id: userId }, {
+                password: yield argon2_1.default.hash(newPassword)
+            });
+            req.session.userId = userId;
+            return {
+                user
+            };
+        });
+    }
 };
 __decorate([
     type_graphql_1.Query(() => User_1.User, { nullable: true }),
@@ -208,21 +191,45 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "me", null);
 __decorate([
-    type_graphql_1.Mutation(() => UserResponse),
+    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
     __param(0, type_graphql_1.Arg('options')),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [registerInput, Object]),
+    __metadata("design:paramtypes", [registerInput_1.registerInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
 __decorate([
-    type_graphql_1.Mutation(() => UserResponse),
+    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
     __param(0, type_graphql_1.Arg('options')),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [loginInput, Object]),
+    __metadata("design:paramtypes", [loginInput_1.loginInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
+__decorate([
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "logout", null);
+__decorate([
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Arg('email')),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "forgotPassword", null);
+__decorate([
+    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
+    __param(0, type_graphql_1.Arg('token')),
+    __param(1, type_graphql_1.Arg('newPassword')),
+    __param(2, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "changePassword", null);
 UserResolver = __decorate([
     type_graphql_1.Resolver()
 ], UserResolver);
