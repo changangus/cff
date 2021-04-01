@@ -1,7 +1,7 @@
 import { User, Users } from "../models/User";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import argon2 from 'argon2';
-import { validateEmail, validateRegister } from "../utils/validators";
+import { validateRegister } from "../utils/validators";
 import { MyContext } from "../types";
 import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
 import { sendEmail } from '../utils/sendEmail';

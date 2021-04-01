@@ -1,8 +1,6 @@
 import { Field, ID, ObjectType } from "type-graphql";
-import { prop, getModelForClass, index, buildSchema } from "@typegoose/typegoose"
-
-@ObjectType()
-@index({email: 1}, {unique: true}) // Mongo uses indexes to keep track of unique props
+import { prop, getModelForClass, buildSchema } from "@typegoose/typegoose"
+@ObjectType() // Mongo uses indexes to keep track of unique props
 export class User {
   @Field(() => ID, {nullable: true})
   _id: string
@@ -16,7 +14,7 @@ export class User {
   lastName: string;
 
   @Field({nullable: true}) 
-  @prop({required: true})
+  @prop({required: true, unique: true})
   email: string;
 
   // Removing the field property removes the ability to select the password from graphql

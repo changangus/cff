@@ -30,7 +30,7 @@ __decorate([
 ], User.prototype, "lastName", void 0);
 __decorate([
     type_graphql_1.Field({ nullable: true }),
-    typegoose_1.prop({ required: true }),
+    typegoose_1.prop({ required: true, unique: true }),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([
@@ -38,8 +38,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 User = __decorate([
-    type_graphql_1.ObjectType(),
-    typegoose_1.index({ email: 1 }, { unique: true })
+    type_graphql_1.ObjectType()
 ], User);
 exports.User = User;
 ;

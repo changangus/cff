@@ -12,19 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("reflect-metadata");
-require("colors");
-const express_1 = __importDefault(require("express"));
-const mongoose_1 = __importDefault(require("mongoose"));
 const apollo_server_express_1 = require("apollo-server-express");
+require("colors");
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const express_1 = __importDefault(require("express"));
+const express_session_1 = __importDefault(require("express-session"));
+const ioredis_1 = __importDefault(require("ioredis"));
+const mongoose_1 = __importDefault(require("mongoose"));
+require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
+const constants_1 = require("./constants");
+const fridge_1 = require("./resolvers/fridge");
 const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
-const ioredis_1 = __importDefault(require("ioredis"));
-const express_session_1 = __importDefault(require("express-session"));
-const connect_redis_1 = __importDefault(require("connect-redis"));
-const constants_1 = require("./constants");
-const cors_1 = __importDefault(require("cors"));
 const app = express_1.default();
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,7 +35,7 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
             useCreateIndex: true,
             useUnifiedTopology: true,
             useFindAndModify: false,
-            autoIndex: true
+            autoIndex: true,
         });
         console.log(`Mongo Connected to: ${conn.connection.host}`.cyan.bold);
     }
@@ -44,6 +46,7 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    dotenv_1.default.config();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default();
     app.use(cors_1.default({
@@ -62,16 +65,16 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             sameSite: 'lax',
             secure: constants_1.__prod__,
         },
-        secret: 'QDwfet234Foi764hGt9iklR45EDfv',
+        secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: false,
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
-            resolvers: [hello_1.HelloResolver, user_1.UserResolver],
+            resolvers: [hello_1.HelloResolver, user_1.UserResolver, fridge_1.FridgeResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ req, res, redis })
+        context: ({ req, res }) => ({ req, res, redis }),
     });
     apolloServer.applyMiddleware({ app, cors: false });
     const PORT = 4000;
