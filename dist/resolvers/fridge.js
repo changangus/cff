@@ -49,12 +49,14 @@ let FridgeResolver = class FridgeResolver {
             const { name, address, description } = inputs;
             const author = yield User_1.Users.findOne({ _id: req.session.userId });
             const response = yield getGeocodeRes_1.geocode(address);
-            console.log(response.data);
+            const { lat, lng } = response.data.results[0].geometry.location;
             const fridge = new Fridge_1.Fridges({
                 name,
                 address,
                 description,
                 author,
+                lat,
+                lng
             });
             try {
                 yield fridge.save();
