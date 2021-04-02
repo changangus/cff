@@ -23,10 +23,11 @@ export class FridgeResolver {
     @Arg('inputs') inputs: FridgeInput,
     @Ctx() { req } : MyContext
   ): Promise<Fridge | null> {
+
       const { name, address, description } = inputs;
       const author = await Users.findOne({_id: req.session.userId});
       const response = await geocode(address);
-      const { lat, lng } = response.data.results[0].geometry.location
+      const { lat, lng } = response.data.results[0].geometry.location;
       
       const fridge = new Fridges({
         name,

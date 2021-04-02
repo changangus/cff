@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 
 export const geocode = async (address: string) => {
   const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
@@ -8,5 +8,5 @@ export const geocode = async (address: string) => {
     }
   });
 
-  return response
+  return response;
 }
