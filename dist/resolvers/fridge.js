@@ -44,6 +44,11 @@ FridgeInput = __decorate([
     type_graphql_1.InputType()
 ], FridgeInput);
 let FridgeResolver = class FridgeResolver {
+    getAllFridges() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return Fridge_1.Fridges.find({});
+        });
+    }
     createFridge(inputs, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { name, address, description } = inputs;
@@ -70,6 +75,12 @@ let FridgeResolver = class FridgeResolver {
         });
     }
 };
+__decorate([
+    type_graphql_1.Query(() => [Fridge_1.Fridge]),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], FridgeResolver.prototype, "getAllFridges", null);
 __decorate([
     type_graphql_1.Mutation(() => Fridge_1.Fridge),
     __param(0, type_graphql_1.Arg('inputs')),

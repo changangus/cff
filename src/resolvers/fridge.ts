@@ -1,5 +1,5 @@
 import { Fridge, Fridges } from '../models/Fridge';
-import { Arg, Ctx, Field, InputType, Mutation, Resolver } from 'type-graphql';
+import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from 'type-graphql';
 import { MyContext } from '../types';
 import { Users } from '../models/User';
 import { geocode } from '../utils/getGeocodeRes';
@@ -18,6 +18,11 @@ class FridgeInput {
 
 @Resolver()
 export class FridgeResolver {
+  @Query(() => [Fridge])
+  async getAllFridges () :Promise<Fridge[]> {
+    return Fridges.find({})
+  }
+
   @Mutation(() => Fridge)
   async createFridge (
     @Arg('inputs') inputs: FridgeInput,
