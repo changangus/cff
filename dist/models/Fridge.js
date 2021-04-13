@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fridges = exports.Fridge = void 0;
 const type_graphql_1 = require("type-graphql");
@@ -37,7 +38,7 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => User_1.User),
     typegoose_1.prop({ ref: () => User_1.User }),
-    __metadata("design:type", Object)
+    __metadata("design:type", typeof (_a = typeof typegoose_1.Ref !== "undefined" && typegoose_1.Ref) === "function" ? _a : Object)
 ], Fridge.prototype, "author", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Float, { nullable: true }),

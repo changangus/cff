@@ -20,6 +20,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FridgeResolver = void 0;
 const Fridge_1 = require("../models/Fridge");
@@ -79,7 +80,7 @@ __decorate([
     type_graphql_1.Query(() => [Fridge_1.Fridge]),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", typeof (_a = typeof Promise !== "undefined" && Promise) === "function" ? _a : Object)
 ], FridgeResolver.prototype, "getAllFridges", null);
 __decorate([
     type_graphql_1.Mutation(() => Fridge_1.Fridge),
@@ -87,7 +88,7 @@ __decorate([
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [FridgeInput, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", typeof (_b = typeof Promise !== "undefined" && Promise) === "function" ? _b : Object)
 ], FridgeResolver.prototype, "createFridge", null);
 FridgeResolver = __decorate([
     type_graphql_1.Resolver()
