@@ -19,6 +19,18 @@ export class Fridge {
   @prop({required: true})
   description: string;
 
+  @Field(() => String) 
+  @prop()
+  imageUrl?: string;
+
+  @Field(() => String) 
+  @prop()
+  instagram?: string;
+
+  @Field(() => String) 
+  @prop()
+  twitter?: string;
+
   @Field(() => User) 
   @prop({ ref: () => User})
   public author: Ref<User>

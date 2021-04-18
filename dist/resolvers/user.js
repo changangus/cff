@@ -35,6 +35,7 @@ const uuid_1 = require("uuid");
 const registerInput_1 = require("./types/registerInput");
 const loginInput_1 = require("./types/loginInput");
 const UserResponse_1 = require("./types/UserResponse");
+const Fridge_1 = require("../models/Fridge");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -126,6 +127,52 @@ let UserResolver = class UserResolver {
         });
     }
     ;
+    updateUser(options, { req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.session.userId) {
+                return {
+                    errors: [{
+                            field: "username",
+                            message: "You must be logged in to complete this action."
+                        }]
+                };
+            }
+            const userId = req.session.userId;
+            const { firstName, lastName, email, password } = options;
+            const errors = validators_1.validateRegister(options);
+            if (errors) {
+                return { errors };
+            }
+            ;
+            const hashedPassword = yield argon2_1.default.hash(password);
+            const updatedUser = yield User_1.Users.findByIdAndUpdate(userId, {
+                firstName,
+                lastName,
+                email,
+                password: hashedPassword
+            }, { new: true });
+            if (!updatedUser) {
+                return {
+                    errors: [{
+                            field: "user",
+                            message: "Update failed."
+                        }]
+                };
+            }
+            ;
+            return { user: updatedUser };
+        });
+    }
+    deleteUser({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield User_1.Users.findByIdAndDelete(req.session.userId);
+            if (user) {
+                Fridge_1.Fridges.deleteMany({ author: user });
+                return true;
+            }
+            return false;
+        });
+    }
     forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield User_1.Users.findOne({ email });
@@ -214,6 +261,21 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "logout", null);
+__decorate([
+    type_graphql_1.Mutation(() => UserResponse_1.UserResponse),
+    __param(0, type_graphql_1.Arg("options")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [registerInput_1.registerInput, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "updateUser", null);
+__decorate([
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "deleteUser", null);
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     __param(0, type_graphql_1.Arg('email')),

@@ -35,6 +35,21 @@ __decorate([
     __metadata("design:type", String)
 ], Fridge.prototype, "description", void 0);
 __decorate([
+    type_graphql_1.Field(() => String),
+    typegoose_1.prop(),
+    __metadata("design:type", String)
+], Fridge.prototype, "imageUrl", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    typegoose_1.prop(),
+    __metadata("design:type", String)
+], Fridge.prototype, "instagram", void 0);
+__decorate([
+    type_graphql_1.Field(() => String),
+    typegoose_1.prop(),
+    __metadata("design:type", String)
+], Fridge.prototype, "twitter", void 0);
+__decorate([
     type_graphql_1.Field(() => User_1.User),
     typegoose_1.prop({ ref: () => User_1.User }),
     __metadata("design:type", Object)

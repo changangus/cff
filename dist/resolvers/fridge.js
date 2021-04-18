@@ -40,6 +40,18 @@ __decorate([
     type_graphql_1.Field(),
     __metadata("design:type", String)
 ], FridgeInput.prototype, "description", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], FridgeInput.prototype, "imageUrl", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], FridgeInput.prototype, "instagram", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], FridgeInput.prototype, "twitter", void 0);
 FridgeInput = __decorate([
     type_graphql_1.InputType()
 ], FridgeInput);
@@ -51,7 +63,7 @@ let FridgeResolver = class FridgeResolver {
     }
     createFridge(inputs, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { name, address, description } = inputs;
+            const { name, address, description, instagram, twitter, imageUrl } = inputs;
             const author = yield User_1.Users.findOne({ _id: req.session.userId });
             const response = yield getGeocodeRes_1.geocode(address);
             const { lat, lng } = response.data.results[0].geometry.location;
@@ -59,7 +71,10 @@ let FridgeResolver = class FridgeResolver {
                 name,
                 address,
                 description,
+                instagram,
+                twitter,
                 author,
+                imageUrl: imageUrl ? imageUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png',
                 lat,
                 lng
             });

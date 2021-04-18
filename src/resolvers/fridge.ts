@@ -3,7 +3,6 @@ import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from 'type-grap
 import { MyContext } from '../types';
 import { Users } from '../models/User';
 import { geocode } from '../utils/getGeocodeRes';
-
 @InputType()
 class FridgeInput {
   @Field()
@@ -14,6 +13,15 @@ class FridgeInput {
 
   @Field()
   description: string;
+
+  @Field()
+  imageUrl?: string;
+  
+  @Field()
+  instagram?: string;
+  
+  @Field()
+  twitter?: string;
 }
 
 @Resolver()
@@ -29,7 +37,7 @@ export class FridgeResolver {
     @Ctx() { req } : MyContext
   ): Promise<Fridge | null> {
 
-      const { name, address, description } = inputs;
+      const { name, address, description, instagram, twitter, imageUrl } = inputs;
       const author = await Users.findOne({_id: req.session.userId});
       const response = await geocode(address);
       const { lat, lng } = response.data.results[0].geometry.location;
@@ -38,7 +46,10 @@ export class FridgeResolver {
         name,
         address,
         description,
+        instagram,
+        twitter,
         author,
+        imageUrl: imageUrl ? imageUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png',
         lat,
         lng
       });
@@ -52,5 +63,4 @@ export class FridgeResolver {
     
       return fridge
   }
-
 }

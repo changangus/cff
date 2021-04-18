@@ -9,6 +9,7 @@ import { v4 } from 'uuid';
 import { registerInput } from './types/registerInput';
 import { loginInput } from './types/loginInput';
 import { UserResponse } from './types/UserResponse';
+import { Fridges } from '../models/Fridge';
 @Resolver()
 export class UserResolver {
   /* ********** 
@@ -130,6 +131,71 @@ export class UserResolver {
     });
   };
 
+  /* ************* 
+  UPDATE_USER
+  ************** */
+
+  @Mutation(() => UserResponse)
+  async updateUser(
+    @Arg("options") options: registerInput,
+    @Ctx() { req }: MyContext 
+  ): Promise<UserResponse> {
+
+    if(!req.session.userId) {
+      return {
+        errors: [{
+          field: "username",
+          message: "You must be logged in to complete this action."
+        }]
+      }
+    }
+
+    const userId = req.session.userId;
+
+    const { firstName, lastName, email, password } = options;
+
+    const errors = validateRegister(options);
+
+    if(errors) {
+      return { errors }
+    };
+
+    const hashedPassword = await argon2.hash(password);
+
+    const updatedUser = await Users.findByIdAndUpdate(userId, {
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword
+    }, {new: true});
+
+    if(!updatedUser) {
+      return {
+        errors: [{
+          field: "user",
+          message: "Update failed."
+        }]
+      }
+    };
+
+    return { user: updatedUser }
+  }
+
+  /* ************* 
+    DELETE_USER
+    ************** */
+  @Mutation(() => Boolean)
+  async deleteUser (
+    @Ctx() { req }: MyContext
+  ) {
+    const user = await Users.findByIdAndDelete(req.session.userId);
+    if(user){
+      Fridges.deleteMany({author: user});
+      return true
+    } 
+    return false;
+  } 
+  
   /* ************* 
     FORGOT_PASSWORD
     ************** */ 

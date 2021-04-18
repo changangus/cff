@@ -9,15 +9,15 @@ const multer_s3_1 = __importDefault(require("multer-s3"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 aws_sdk_1.default.config.update({
-    secretAccessKey: 'MqixYvJwA0jj8EXEwD1/3d5KgyLMr/G1UMJfFGUC',
-    accessKeyId: 'AKIA3NTQEQPDHTEP7Y5T',
+    secretAccessKey: process.env.AWS_ACCESS_KEY,
+    accessKeyId: process.env.AWS_SECRET_KEY,
     region: 'us-east-2'
 });
 const s3 = new aws_sdk_1.default.S3();
 const upload = multer_1.default({
     storage: multer_s3_1.default({
         s3: s3,
-        bucket: 'cff-ac',
+        bucket: 'com-fridge-finder',
         acl: 'public-read',
         metadata: function (_, _1, cb) {
             cb(null, { fieldName: 'TESTING_META_DATA' });
