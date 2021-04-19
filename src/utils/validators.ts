@@ -1,11 +1,12 @@
 import { registerInput } from 'src/resolvers/types/registerInput';
+import { updateInput } from 'src/resolvers/types/updateInput';
 
 export const validateEmail = (email: string) => {
   const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 };
 
-export const validateRegister = (options: registerInput ) => {
+export const validateRegister = (options: registerInput | updateInput ) => {
   const { firstName, lastName, email, password } = options;
     if (firstName.length < 1) {
       return [{
@@ -25,11 +26,13 @@ export const validateRegister = (options: registerInput ) => {
           message: "Please enter a valid email"
         }]
     };
-    if (password.length < 8) {
-      return [{
+    if (password) {
+      if(password.length < 8){
+        return [{
           field: 'password',
           message: 'Password must be more than 8 characters'
         }]
+      }
     };
     return null
 }

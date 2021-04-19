@@ -29,11 +29,13 @@ const validateRegister = (options) => {
             }];
     }
     ;
-    if (password.length < 8) {
-        return [{
-                field: 'password',
-                message: 'Password must be more than 8 characters'
-            }];
+    if (password) {
+        if (password.length < 8) {
+            return [{
+                    field: 'password',
+                    message: 'Password must be more than 8 characters'
+                }];
+        }
     }
     ;
     return null;

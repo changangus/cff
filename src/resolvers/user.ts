@@ -10,6 +10,7 @@ import { registerInput } from './types/registerInput';
 import { loginInput } from './types/loginInput';
 import { UserResponse } from './types/UserResponse';
 import { Fridges } from '../models/Fridge';
+import { updateInput } from './types/updateInput';
 @Resolver()
 export class UserResolver {
   /* ********** 
@@ -114,6 +115,10 @@ export class UserResolver {
     return { user }
   };
 
+  /* *******
+    LOGOUT
+  ******** */
+
   @Mutation(() => Boolean)
   async logout (
     @Ctx() {req, res} : MyContext
@@ -137,7 +142,7 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async updateUser(
-    @Arg("options") options: registerInput,
+    @Arg("options") options: updateInput,
     @Ctx() { req }: MyContext 
   ): Promise<UserResponse> {
 
@@ -148,37 +153,56 @@ export class UserResolver {
           message: "You must be logged in to complete this action."
         }]
       }
-    }
-
-    const userId = req.session.userId;
-
-    const { firstName, lastName, email, password } = options;
-
+    };
+    
     const errors = validateRegister(options);
 
     if(errors) {
       return { errors }
     };
 
-    const hashedPassword = await argon2.hash(password);
+    const userId = req.session.userId;
 
-    const updatedUser = await Users.findByIdAndUpdate(userId, {
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword
-    }, {new: true});
+    const { firstName, lastName, email, password } = options;
 
-    if(!updatedUser) {
-      return {
-        errors: [{
-          field: "user",
-          message: "Update failed."
-        }]
-      }
-    };
+    if(password){
+      const hashedPassword = await argon2.hash(password);
 
-    return { user: updatedUser }
+      const updatedUser = await Users.findByIdAndUpdate(userId, {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword
+      });
+      
+      if(!updatedUser) {
+        return {
+          errors: [{
+            field: "user",
+            message: "Update failed."
+          }]
+        }
+      };
+
+      return { user: updatedUser }
+    } else {
+      const updatedUser = await Users.findByIdAndUpdate(userId, {
+        firstName,
+        lastName,
+        email,
+      }, {new: true});
+      
+      if(!updatedUser) {
+        return {
+          errors: [{
+            field: "user",
+            message: "Update failed."
+          }]
+        }
+      };
+
+      return { user: updatedUser }
+    }
   }
 
   /* ************* 
@@ -186,12 +210,22 @@ export class UserResolver {
     ************** */
   @Mutation(() => Boolean)
   async deleteUser (
-    @Ctx() { req }: MyContext
+    @Ctx() { req, res }: MyContext
   ) {
     const user = await Users.findByIdAndDelete(req.session.userId);
     if(user){
-      Fridges.deleteMany({author: user});
-      return true
+      await Fridges.deleteMany({author: user});
+      return new Promise((resolve) => {
+        req.session.destroy((err) => {
+          res.clearCookie(COOKIE_NAME);
+          if(err) {
+            console.log(err);
+            resolve(false);
+            return;
+          } 
+          resolve(true)
+        })
+      });
     } 
     return false;
   } 

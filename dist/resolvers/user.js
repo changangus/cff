@@ -36,6 +36,7 @@ const registerInput_1 = require("./types/registerInput");
 const loginInput_1 = require("./types/loginInput");
 const UserResponse_1 = require("./types/UserResponse");
 const Fridge_1 = require("../models/Fridge");
+const updateInput_1 = require("./types/updateInput");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -137,38 +138,68 @@ let UserResolver = class UserResolver {
                         }]
                 };
             }
-            const userId = req.session.userId;
-            const { firstName, lastName, email, password } = options;
+            ;
             const errors = validators_1.validateRegister(options);
             if (errors) {
                 return { errors };
             }
             ;
-            const hashedPassword = yield argon2_1.default.hash(password);
-            const updatedUser = yield User_1.Users.findByIdAndUpdate(userId, {
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword
-            }, { new: true });
-            if (!updatedUser) {
-                return {
-                    errors: [{
-                            field: "user",
-                            message: "Update failed."
-                        }]
-                };
+            const userId = req.session.userId;
+            const { firstName, lastName, email, password } = options;
+            if (password) {
+                const hashedPassword = yield argon2_1.default.hash(password);
+                const updatedUser = yield User_1.Users.findByIdAndUpdate(userId, {
+                    firstName,
+                    lastName,
+                    email,
+                    password: hashedPassword
+                });
+                if (!updatedUser) {
+                    return {
+                        errors: [{
+                                field: "user",
+                                message: "Update failed."
+                            }]
+                    };
+                }
+                ;
+                return { user: updatedUser };
             }
-            ;
-            return { user: updatedUser };
+            else {
+                const updatedUser = yield User_1.Users.findByIdAndUpdate(userId, {
+                    firstName,
+                    lastName,
+                    email,
+                }, { new: true });
+                if (!updatedUser) {
+                    return {
+                        errors: [{
+                                field: "user",
+                                message: "Update failed."
+                            }]
+                    };
+                }
+                ;
+                return { user: updatedUser };
+            }
         });
     }
-    deleteUser({ req }) {
+    deleteUser({ req, res }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield User_1.Users.findByIdAndDelete(req.session.userId);
             if (user) {
-                Fridge_1.Fridges.deleteMany({ author: user });
-                return true;
+                yield Fridge_1.Fridges.deleteMany({ author: user });
+                return new Promise((resolve) => {
+                    req.session.destroy((err) => {
+                        res.clearCookie(constants_1.COOKIE_NAME);
+                        if (err) {
+                            console.log(err);
+                            resolve(false);
+                            return;
+                        }
+                        resolve(true);
+                    });
+                });
             }
             return false;
         });
@@ -266,7 +297,7 @@ __decorate([
     __param(0, type_graphql_1.Arg("options")),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [registerInput_1.registerInput, Object]),
+    __metadata("design:paramtypes", [updateInput_1.updateInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "updateUser", null);
 __decorate([
