@@ -61,6 +61,20 @@ let FridgeResolver = class FridgeResolver {
             return Fridge_1.Fridges.find({});
         });
     }
+    getMyFridges({ req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userId = req.session.userId;
+            const user = yield User_1.Users.findOne({ _id: userId });
+            if (!user) {
+                return {
+                    error: {
+                        message: 'Not authorized',
+                    },
+                };
+            }
+            return Fridge_1.Fridges.find({ author: user });
+        });
+    }
     createFridge(inputs, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const { name, address, description, instagram, twitter, imageUrl } = inputs;
@@ -74,9 +88,11 @@ let FridgeResolver = class FridgeResolver {
                 instagram,
                 twitter,
                 author,
-                imageUrl: imageUrl ? imageUrl : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png',
+                imageUrl: imageUrl
+                    ? imageUrl
+                    : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png',
                 lat,
-                lng
+                lng,
             });
             try {
                 yield fridge.save();
@@ -85,8 +101,62 @@ let FridgeResolver = class FridgeResolver {
                 console.log(error);
                 return null;
             }
-            ;
             return fridge;
+        });
+    }
+    updateFridge(inputs, { req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { name, address, description, instagram, twitter, imageUrl, id } = inputs;
+            const author = yield User_1.Users.findOne({ _id: req.session.userId });
+            const response = yield getGeocodeRes_1.geocode(address);
+            const { lat, lng } = response.data.results[0].geometry.location;
+            const fridge = yield Fridge_1.Fridges.findByIdAndUpdate(id, {
+                name,
+                address,
+                description,
+                instagram,
+                twitter,
+                author: author,
+                imageUrl: imageUrl
+                    ? imageUrl
+                    : 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/1024px-No_image_available.svg.png',
+                lat,
+                lng,
+            });
+            if (!fridge) {
+                return null;
+            }
+            else {
+                return fridge;
+            }
+        });
+    }
+    deleteFridge(id, { req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield User_1.Users.findById(req.session.userId);
+            const fridge = yield Fridge_1.Fridges.findById(id);
+            if (!user) {
+                return {
+                    error: {
+                        message: "You must be logged in."
+                    }
+                };
+            }
+            if ((fridge === null || fridge === void 0 ? void 0 : fridge.author) !== user) {
+                return {
+                    error: {
+                        message: "You are not authorized to complete this action."
+                    }
+                };
+            }
+            try {
+                yield Fridge_1.Fridges.findByIdAndDelete(id);
+                return true;
+            }
+            catch (error) {
+                console.log(error);
+                return false;
+            }
         });
     }
 };
@@ -97,6 +167,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], FridgeResolver.prototype, "getAllFridges", null);
 __decorate([
+    type_graphql_1.Query(() => [Fridge_1.Fridge]),
+    __param(0, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], FridgeResolver.prototype, "getMyFridges", null);
+__decorate([
     type_graphql_1.Mutation(() => Fridge_1.Fridge),
     __param(0, type_graphql_1.Arg('inputs')),
     __param(1, type_graphql_1.Ctx()),
@@ -104,6 +181,22 @@ __decorate([
     __metadata("design:paramtypes", [FridgeInput, Object]),
     __metadata("design:returntype", Promise)
 ], FridgeResolver.prototype, "createFridge", null);
+__decorate([
+    type_graphql_1.Mutation(() => Fridge_1.Fridge),
+    __param(0, type_graphql_1.Arg('inputs')),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], FridgeResolver.prototype, "updateFridge", null);
+__decorate([
+    type_graphql_1.Mutation(() => Boolean),
+    __param(0, type_graphql_1.Arg("id")),
+    __param(1, type_graphql_1.Ctx()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], FridgeResolver.prototype, "deleteFridge", null);
 FridgeResolver = __decorate([
     type_graphql_1.Resolver()
 ], FridgeResolver);
