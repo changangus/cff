@@ -31,6 +31,29 @@ class FridgeInput {
   @Field()
   twitter?: string;
 }
+@InputType()
+class UpdateFridgeInput {
+  @Field()
+  name: string;
+
+  @Field()
+  address: string;
+
+  @Field()
+  description: string;
+
+  @Field()
+  imageUrl?: string;
+
+  @Field()
+  instagram?: string;
+
+  @Field()
+  twitter?: string;
+
+  @Field()
+  id?: string;
+}
 
 @Resolver()
 export class FridgeResolver {
@@ -53,6 +76,13 @@ export class FridgeResolver {
     }
 
     return Fridges.find({ author: user });
+  }
+
+  @Query(() => Fridge)
+  async getFridge(
+    @Arg("id") id :string,
+  ) {
+    return Fridges.findById(id);
   }
 
   @Mutation(() => Fridge)
@@ -91,7 +121,7 @@ export class FridgeResolver {
 
   @Mutation(() => Fridge)
   async updateFridge(
-    @Arg('inputs') inputs: FridgeInput & {id: string},
+    @Arg('inputs') inputs: UpdateFridgeInput,
     @Ctx() { req }: MyContext
   ): Promise<Fridge | null> {
     const { name, address, description, instagram, twitter, imageUrl, id } = inputs;
@@ -125,25 +155,8 @@ export class FridgeResolver {
     @Arg("id") id: string,
     @Ctx() { req }: MyContext
   ){
-    const user = await Users.findById(req.session.userId);
-    const fridge = await Fridges.findById(id);
-
-    if(!user){
-      return {
-        error: {
-          message: "You must be logged in."
-        }
-      }
-    }
-
-    if(fridge?.author !== user){
-      return {
-        error: {
-          message: "You are not authorized to complete this action."
-        }
-      }
-    }
     try {
+      console.log("in try catch")
       await Fridges.findByIdAndDelete(id);
       return true
     } catch (error) {

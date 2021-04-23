@@ -55,6 +55,39 @@ __decorate([
 FridgeInput = __decorate([
     type_graphql_1.InputType()
 ], FridgeInput);
+let UpdateFridgeInput = class UpdateFridgeInput {
+};
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "name", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "address", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "description", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "imageUrl", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "instagram", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "twitter", void 0);
+__decorate([
+    type_graphql_1.Field(),
+    __metadata("design:type", String)
+], UpdateFridgeInput.prototype, "id", void 0);
+UpdateFridgeInput = __decorate([
+    type_graphql_1.InputType()
+], UpdateFridgeInput);
 let FridgeResolver = class FridgeResolver {
     getAllFridges() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -73,6 +106,11 @@ let FridgeResolver = class FridgeResolver {
                 };
             }
             return Fridge_1.Fridges.find({ author: user });
+        });
+    }
+    getFridge(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return Fridge_1.Fridges.findById(id);
         });
     }
     createFridge(inputs, { req }) {
@@ -133,23 +171,8 @@ let FridgeResolver = class FridgeResolver {
     }
     deleteFridge(id, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.Users.findById(req.session.userId);
-            const fridge = yield Fridge_1.Fridges.findById(id);
-            if (!user) {
-                return {
-                    error: {
-                        message: "You must be logged in."
-                    }
-                };
-            }
-            if ((fridge === null || fridge === void 0 ? void 0 : fridge.author) !== user) {
-                return {
-                    error: {
-                        message: "You are not authorized to complete this action."
-                    }
-                };
-            }
             try {
+                console.log("in try catch");
                 yield Fridge_1.Fridges.findByIdAndDelete(id);
                 return true;
             }
@@ -174,6 +197,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], FridgeResolver.prototype, "getMyFridges", null);
 __decorate([
+    type_graphql_1.Query(() => Fridge_1.Fridge),
+    __param(0, type_graphql_1.Arg("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], FridgeResolver.prototype, "getFridge", null);
+__decorate([
     type_graphql_1.Mutation(() => Fridge_1.Fridge),
     __param(0, type_graphql_1.Arg('inputs')),
     __param(1, type_graphql_1.Ctx()),
@@ -186,7 +216,7 @@ __decorate([
     __param(0, type_graphql_1.Arg('inputs')),
     __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [UpdateFridgeInput, Object]),
     __metadata("design:returntype", Promise)
 ], FridgeResolver.prototype, "updateFridge", null);
 __decorate([
