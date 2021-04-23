@@ -16,10 +16,13 @@ import { UserResolver } from './resolvers/user';
 
 // create express instance:
 const app = express();
+dotenv.config();
+// DB
+const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL
 // connect to our mongo database
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect('mongodb://localhost:27017/cff', {
+    const conn = await mongoose.connect(DB_URL, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
@@ -35,7 +38,7 @@ const connectDB = async () => {
 
 connectDB();
 const main = async () => {
-  dotenv.config();
+  
   // Redis
   const RedisStore = connectRedis(session);
   const redis = new Redis();

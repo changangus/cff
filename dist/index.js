@@ -28,9 +28,11 @@ const fridge_1 = require("./resolvers/fridge");
 const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
 const app = express_1.default();
+dotenv_1.default.config();
+const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL;
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conn = yield mongoose_1.default.connect('mongodb://localhost:27017/cff', {
+        const conn = yield mongoose_1.default.connect(DB_URL, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true,
@@ -46,7 +48,6 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
-    dotenv_1.default.config();
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default();
     app.use(cors_1.default({
