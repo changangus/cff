@@ -76,6 +76,7 @@ const main = async () => {
       validate: false,
     }),
     context: ({ req, res }) => ({ req, res, redis }),
+    playground: true,
   });
   apolloServer.applyMiddleware({ app, cors: false });
 
