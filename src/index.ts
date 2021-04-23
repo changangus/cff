@@ -43,12 +43,7 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis();
   // cors
-  app.use(
-    cors({
-      origin: 'http://localhost:3000',
-      credentials: true,
-    })
-  );
+  app.use(cors());
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
@@ -75,8 +70,7 @@ const main = async () => {
       resolvers: [HelloResolver, UserResolver, FridgeResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
-    playground: true,
+    context: ({ req, res }) => ({ req, res, redis })
   });
   apolloServer.applyMiddleware({ app, cors: false });
 

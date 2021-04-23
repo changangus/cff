@@ -50,10 +50,7 @@ connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default();
-    app.use(cors_1.default({
-        origin: 'http://localhost:3000',
-        credentials: true,
-    }));
+    app.use(cors_1.default());
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({
@@ -75,8 +72,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             resolvers: [hello_1.HelloResolver, user_1.UserResolver, fridge_1.FridgeResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ req, res, redis }),
-        playground: true,
+        context: ({ req, res }) => ({ req, res, redis })
     });
     apolloServer.applyMiddleware({ app, cors: false });
     const PORT = process.env.PORT || 4000;
