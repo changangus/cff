@@ -153,7 +153,6 @@ export class FridgeResolver {
   @Mutation(() => Boolean)
   async deleteFridge(
     @Arg("id") id: string,
-    @Ctx() { req }: MyContext
   ){
     try {
       console.log("in try catch")

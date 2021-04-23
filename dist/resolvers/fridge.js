@@ -169,7 +169,7 @@ let FridgeResolver = class FridgeResolver {
             }
         });
     }
-    deleteFridge(id, { req }) {
+    deleteFridge(id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log("in try catch");
@@ -222,9 +222,8 @@ __decorate([
 __decorate([
     type_graphql_1.Mutation(() => Boolean),
     __param(0, type_graphql_1.Arg("id")),
-    __param(1, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], FridgeResolver.prototype, "deleteFridge", null);
 FridgeResolver = __decorate([
