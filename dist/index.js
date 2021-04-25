@@ -29,10 +29,9 @@ const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
 const app = express_1.default();
 dotenv_1.default.config();
-const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL;
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conn = yield mongoose_1.default.connect(DB_URL, {
+        const conn = yield mongoose_1.default.connect(process.env.DATABASE_URL, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true,

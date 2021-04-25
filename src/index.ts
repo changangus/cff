@@ -17,12 +17,10 @@ import { UserResolver } from './resolvers/user';
 // create express instance:
 const app = express();
 dotenv.config();
-// DB
-const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL
 // connect to our mongo database
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(DB_URL, {
+    const conn = await mongoose.connect(process.env.DATABASE_URL, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
