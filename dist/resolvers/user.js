@@ -41,6 +41,7 @@ let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(req.session);
+            console.log(req.session.userId);
             if (!req.session.userId) {
                 return null;
             }

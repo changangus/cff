@@ -21,7 +21,8 @@ export class UserResolver {
   async me(
     @Ctx() { req }: MyContext,
   ) {
-    console.log(req.session)
+    console.log(req.session);
+    console.log(req.session.userId);
     if (!req.session.userId) { // check session 
       return null
     };
