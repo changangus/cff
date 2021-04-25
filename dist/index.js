@@ -54,10 +54,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     app.set('trust proxy', 1);
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,
-        store: new RedisStore({
-            client: redis,
-            disableTouch: true,
-        }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: true,
