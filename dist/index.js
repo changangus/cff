@@ -48,10 +48,10 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    app.set('trust proxy', 1);
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default());
-    app.set('trust proxy', 1);
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({
@@ -60,7 +60,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: false,
+            httpOnly: true,
             sameSite: 'lax',
             secure: constants_1.__prod__,
         },
