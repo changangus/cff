@@ -53,7 +53,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default());
     app.use(express_session_1.default({
-        name: 'qid',
+        name: 'random',
         store: new RedisStore({
             client: redis,
             disableTouch: true,

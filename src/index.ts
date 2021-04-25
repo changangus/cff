@@ -47,7 +47,7 @@ const main = async () => {
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
-      name: 'qid',
+      name: 'random',
       store: new RedisStore({
         client: redis,
         disableTouch: true,
