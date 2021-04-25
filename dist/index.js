@@ -29,9 +29,10 @@ const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
 const app = express_1.default();
 dotenv_1.default.config();
+const DB_URL = process.env.DATABASE_URL || 'mongodb://localhost:27017/cff';
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const conn = yield mongoose_1.default.connect(process.env.DATABASE_URL, {
+        const conn = yield mongoose_1.default.connect(DB_URL, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true,
@@ -48,7 +49,11 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const RedisStore = connect_redis_1.default(express_session_1.default);
-    const redis = new ioredis_1.default(process.env.REDIS_URL);
+    const redis = new ioredis_1.default(process.env.REDIS_URL, {
+        tls: {
+            rejectUnauthorized: false
+        }
+    });
     app.use(cors_1.default());
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,

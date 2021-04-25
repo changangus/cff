@@ -17,10 +17,12 @@ import { UserResolver } from './resolvers/user';
 // create express instance:
 const app = express();
 dotenv.config();
+// DB
+const DB_URL = process.env.DATABASE_URL || 'mongodb://localhost:27017/cff'
 // connect to our mongo database
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.DATABASE_URL, {
+    const conn = await mongoose.connect(DB_URL, {
       useNewUrlParser: true,
       useCreateIndex: true,
       useUnifiedTopology: true,
@@ -39,7 +41,11 @@ const main = async () => {
   
   // Redis
   const RedisStore = connectRedis(session);
-  const redis = new Redis(process.env.REDIS_URL);
+  const redis = new Redis(process.env.REDIS_URL, {
+    tls: {
+      rejectUnauthorized: false
+    }
+  });
   // cors
   app.use(cors());
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
