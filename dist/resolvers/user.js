@@ -40,6 +40,7 @@ const updateInput_1 = require("./types/updateInput");
 let UserResolver = class UserResolver {
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(req.session);
             if (!req.session.userId) {
                 return null;
             }
@@ -108,6 +109,8 @@ let UserResolver = class UserResolver {
             }
             ;
             req.session.userId = user._id;
+            console.log("USERID:", req.session.userId);
+            console.log("SESSION:", req.session);
             return { user };
         });
     }

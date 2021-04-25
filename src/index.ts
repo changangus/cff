@@ -44,6 +44,7 @@ const main = async () => {
   const redis = new Redis(process.env.REDIS_URL);
   // cors
   app.use(cors());
+  app.set('trust proxy', 1)
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
@@ -60,7 +61,7 @@ const main = async () => {
       },
       secret: (process.env.SESSION_SECRET as string),
       resave: false,
-      saveUninitialized: false,
+      saveUninitialized: true,
     })
   );
 
