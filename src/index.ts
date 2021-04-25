@@ -43,7 +43,10 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
   // cors
-  app.use(cors());
+  app.use(cors({
+    credentials: true,
+    origin: "http://localhost:3000/"
+  }));
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
@@ -60,7 +63,6 @@ const main = async () => {
         domain: __prod__ ? ".herokuapp.com" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
-      proxy: true,
       resave: false,
       saveUninitialized: false,
     })
