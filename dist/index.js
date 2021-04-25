@@ -72,9 +72,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             resolvers: [hello_1.HelloResolver, user_1.UserResolver, fridge_1.FridgeResolver],
             validate: false,
         }),
-        context: ({ req, res }) => ({ req, res, redis }),
         introspection: true,
-        playground: true
+        playground: true,
+        context: ({ req, res }) => ({ req, res, redis }),
     });
     apolloServer.applyMiddleware({ app, cors: false });
     const PORT = process.env.PORT || 4000;

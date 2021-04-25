@@ -70,9 +70,9 @@ const main = async () => {
       resolvers: [HelloResolver, UserResolver, FridgeResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
     introspection: true,
-    playground: true
+    playground: true,
+    context: ({ req, res }) => ({ req, res, redis }),
   });
   apolloServer.applyMiddleware({ app, cors: false });
 
