@@ -47,7 +47,7 @@ const main = async () => {
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.use(
     session({
-      name: 'random',
+      name: COOKIE_NAME,
       store: new RedisStore({
         client: redis,
         disableTouch: true,
@@ -57,11 +57,12 @@ const main = async () => {
         httpOnly: true,
         sameSite: 'lax',
         secure: __prod__, // cookie only works in https
+        domain: __prod__ ? ".herokuapp.com" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
       proxy: true,
-      resave: true,
-      saveUninitialized: true,
+      resave: false,
+      saveUninitialized: false,
     })
   );
 

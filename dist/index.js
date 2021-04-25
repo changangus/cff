@@ -53,7 +53,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default());
     app.use(express_session_1.default({
-        name: 'random',
+        name: constants_1.COOKIE_NAME,
         store: new RedisStore({
             client: redis,
             disableTouch: true,
@@ -63,11 +63,12 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             httpOnly: true,
             sameSite: 'lax',
             secure: constants_1.__prod__,
+            domain: constants_1.__prod__ ? ".herokuapp.com" : undefined
         },
         secret: process.env.SESSION_SECRET,
         proxy: true,
-        resave: true,
-        saveUninitialized: true,
+        resave: false,
+        saveUninitialized: false,
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
         schema: yield type_graphql_1.buildSchema({
