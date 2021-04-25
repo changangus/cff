@@ -50,7 +50,7 @@ connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     app.set('trust proxy', 1);
     const RedisStore = connect_redis_1.default(express_session_1.default);
-    const redis = new ioredis_1.default(process.env.REDISCLOUD_URL);
+    const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default());
     app.use(express_session_1.default({
         name: 'qid',
@@ -66,7 +66,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         },
         secret: process.env.SESSION_SECRET,
         proxy: true,
-        resave: false,
+        resave: true,
         saveUninitialized: true,
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
