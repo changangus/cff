@@ -65,6 +65,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             secure: constants_1.__prod__,
         },
         secret: process.env.SESSION_SECRET,
+        proxy: true,
         resave: false,
         saveUninitialized: true,
     }));
