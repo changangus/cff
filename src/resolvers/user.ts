@@ -111,7 +111,8 @@ export class UserResolver {
 
     // storing the user id in our session for later access
     req.session.userId = user._id;
-
+    console.log("USERID:", req.session.userId);
+    console.log("SESSION:", req.session);
     return { user }
   };
 
