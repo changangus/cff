@@ -43,10 +43,7 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
   // cors
-  app.use(cors({
-    credentials: true,
-    origin: 'https://cff-fe.vercel.app/'
-  }));
+  app.use(cors());
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.set('trust proxy', 1);
   app.use(
@@ -58,10 +55,10 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: __prod__, // cookie only works in https
-        domain: __prod__ ? ".vercel.app" : undefined
+        // httpOnly: false,
+        // sameSite: 'lax',
+        // secure: __prod__, // cookie only works in https
+        // domain: __prod__ ? ".vercel.app" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
       resave: false,
