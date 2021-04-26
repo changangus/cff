@@ -82,7 +82,6 @@ let UserResolver = class UserResolver {
             }
             ;
             req.session.userId = user._id;
-            req.session.save();
             return { user };
         });
     }
@@ -111,7 +110,6 @@ let UserResolver = class UserResolver {
             }
             ;
             req.session.userId = user._id;
-            req.session.save();
             console.log("USERID:", req.session.userId);
             console.log("SESSION:", req.session);
             return { user };
