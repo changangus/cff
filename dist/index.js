@@ -52,7 +52,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default({
         credentials: true,
-        origin: "http://localhost:3000/"
+        origin: 'https://cff-fe.vercel.app/'
     }));
     app.set('trust proxy', 1);
     app.use(express_session_1.default({
@@ -64,6 +64,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             httpOnly: false,
+            sameSite: 'lax',
+            secure: constants_1.__prod__,
+            domain: constants_1.__prod__ ? ".vercel.app" : undefined
         },
         secret: process.env.SESSION_SECRET,
         resave: false,
