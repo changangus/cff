@@ -45,7 +45,6 @@ const main = async () => {
   // cors
   app.use(cors());
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
-  app.set('trust proxy', 1);
   app.use(
     session({
       name: COOKIE_NAME,
@@ -55,12 +54,12 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        // httpOnly: false,
-        // sameSite: 'lax',
-        // secure: __prod__, // cookie only works in https
-        // domain: __prod__ ? ".vercel.app" : undefined
+        sameSite: 'lax',
+        secure: __prod__, // cookie only works in https
+        domain: __prod__ ? ".vercel.app" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
+      proxy: true,
       resave: false,
       saveUninitialized: false,
     })
