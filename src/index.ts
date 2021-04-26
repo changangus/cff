@@ -57,10 +57,10 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: __prod__, // cookie only works in https
-        domain: __prod__ ? ".herokuapp.com" : undefined
+        // httpOnly: true,
+        // sameSite: 'lax',
+        // secure: __prod__, // cookie only works in https
+        // domain: __prod__ ? ".herokuapp.com" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
       resave: false,

@@ -63,10 +63,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: constants_1.__prod__,
-            domain: constants_1.__prod__ ? ".herokuapp.com" : undefined
         },
         secret: process.env.SESSION_SECRET,
         resave: false,
