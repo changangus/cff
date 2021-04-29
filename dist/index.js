@@ -29,7 +29,7 @@ const hello_1 = require("./resolvers/hello");
 const user_1 = require("./resolvers/user");
 const app = express_1.default();
 dotenv_1.default.config();
-const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL;
+const DB_URL = process.env.DATABASE_URL;
 const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const conn = yield mongoose_1.default.connect(DB_URL, {
@@ -49,11 +49,12 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const RedisStore = connect_redis_1.default(express_session_1.default);
-    const redis = new ioredis_1.default();
+    const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default({
         origin: 'http://localhost:3000',
         credentials: true,
     }));
+    app.set('trust proxy', 1);
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,
         store: new RedisStore({
@@ -65,6 +66,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             httpOnly: true,
             sameSite: 'lax',
             secure: constants_1.__prod__,
+            domain: constants_1.__prod__ ? ".vercel.app" : undefined
         },
         secret: process.env.SESSION_SECRET,
         resave: false,

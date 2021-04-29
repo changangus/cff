@@ -18,7 +18,7 @@ import { UserResolver } from './resolvers/user';
 const app = express();
 dotenv.config();
 // DB
-const DB_URL = 'mongodb://localhost:27017/cff' || process.env.DATABASE_URL
+const DB_URL = process.env.DATABASE_URL as string;
 // connect to our mongo database
 const connectDB = async () => {
   try {
@@ -41,7 +41,7 @@ const main = async () => {
   
   // Redis
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
   // cors
   app.use(
     cors({
@@ -50,6 +50,7 @@ const main = async () => {
     })
   );
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
+  app.set('trust proxy', 1);
   app.use(
     session({
       name: COOKIE_NAME,
@@ -62,6 +63,7 @@ const main = async () => {
         httpOnly: true,
         sameSite: 'lax',
         secure: __prod__, // cookie only works in https
+        domain: __prod__ ? ".vercel.app" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
       resave: false,
