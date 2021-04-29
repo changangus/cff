@@ -80,7 +80,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         context: ({ req, res }) => ({ req, res, redis }),
     });
     apolloServer.applyMiddleware({ app, cors: false });
-    const PORT = 4000;
+    const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
         console.log(`Server is listening on port ${PORT}`.blue.bold);
     });
