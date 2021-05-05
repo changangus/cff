@@ -38,7 +38,7 @@ const connectDB = async () => {
 
 connectDB();
 const main = async () => {
-  
+  console.log(process.env.ORIGIN)
   // Redis
   const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
