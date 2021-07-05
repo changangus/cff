@@ -48,12 +48,19 @@ const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 connectDB();
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(process.env.ORIGIN);
     const RedisStore = connect_redis_1.default(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default({
-        origin: process.env.ORIGIN || 'http://localhost:3000',
+        origin: 'http://localhost:3000',
         credentials: true,
     }));
+    app.use(function (req, res, next) {
+        res.header('Access-Control-Allow-Origin', req.headers.origin);
+        res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+        next();
+    });
     app.set('trust proxy', 1);
     app.use(express_session_1.default({
         name: constants_1.COOKIE_NAME,

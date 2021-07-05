@@ -45,7 +45,8 @@ const main = async () => {
   // cors
   app.use(
     cors({
-      origin: process.env.ORIGIN || 'http://localhost:3000',
+      // origin: process.env.ORIGIN || 'http://localhost:3000',
+      origin: 'http://localhost:3000',
       credentials: true,
     })
   );
@@ -66,10 +67,10 @@ const main = async () => {
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: false,
-        sameSite: 'none',
-        secure: __prod__, // cookie only works in https
-        domain: __prod__ ? ".vercel.app" : undefined
+        // httpOnly: false,
+        // sameSite: 'none',
+        // secure: __prod__, // cookie only works in https
+        // domain: __prod__ ? ".vercel.app" : undefined
       },
       secret: (process.env.SESSION_SECRET as string),
       resave: false,
