@@ -49,12 +49,7 @@ const main = async () => {
       credentials: true,
     })
   );
-  app.use(function(req, res, next) {  
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
-    next();
-  });
+ 
   // Session middleware needs to come before apollo so we can use it inside apollo middleware
   app.set('trust proxy', 1);
   app.use(
