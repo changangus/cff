@@ -65,6 +65,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         cookie: {
             maxAge: 1000 * 60 * 60 * 24 * 365 * 10,
             sameSite: 'none',
+            secure: true,
         },
         secret: process.env.SESSION_SECRET,
         resave: false,
